@@ -27,6 +27,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 store: store,
                 onChooseApp: { [weak self] in self?.chooseApp() },
                 onOpenSettings: { Self.openPrivacyAndSecurity() },
+                onGrantAccess: { Self.openFilesAndFolders() },
                 onQuit: { NSApp.terminate(nil) }
             )
         )
@@ -105,6 +106,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// can't resolve itself.
     private static func openPrivacyAndSecurity() {
         let url = URL(string: "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension")!
+        NSWorkspace.shared.open(url)
+    }
+
+    /// Where a denied Downloads or Desktop prompt can be reversed — the prompt
+    /// itself only appears once per code identity.
+    private static func openFilesAndFolders() {
+        let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_FilesAndFolders")!
         NSWorkspace.shared.open(url)
     }
 }

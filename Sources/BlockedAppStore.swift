@@ -40,6 +40,9 @@ struct BlockedApp: Identifiable, Equatable {
 final class BlockedAppStore: ObservableObject {
     @Published private(set) var apps: [BlockedApp] = []
     @Published private(set) var isScanning = false
+    /// Folders the scan couldn't read. Surfaced so reduced coverage is visible
+    /// rather than looking like a clean result.
+    @Published private(set) var deniedFolders: [String] = []
     @Published var lastError: String?
 
     private var cache = AssessmentCache()
@@ -70,6 +73,7 @@ final class BlockedAppStore: ObservableObject {
     private func runScan() async {
         var found: [BlockedApp] = []
         var seen: Set<String> = []
+        var denied: [String] = []
 
         // One root at a time. ~/Downloads and ~/Desktop are permission-protected:
         // reading them blocks in the kernel until the user answers a consent
@@ -77,9 +81,15 @@ final class BlockedAppStore: ObservableObject {
         // that stalls can't hold back the results already gathered from the ones
         // that didn't.
         for root in Self.searchRoots {
-            let candidates = await Task.detached(priority: .userInitiated) {
+            let scanned = await Task.detached(priority: .userInitiated) {
                 Self.quarantinedCandidates(in: root)
             }.value
+
+            if scanned.denied {
+                denied.append(FileManager.default.displayName(atPath: root.path))
+                deniedFolders = denied
+            }
+            let candidates = scanned.apps
 
             // Cache is read here, on the actor, so the concurrent assessment below
             // never has to reach back into `self`.
@@ -108,6 +118,7 @@ final class BlockedAppStore: ObservableObject {
         cache.prune(keeping: seen)
         cache.save()
         apps = Self.sorted(found)
+        deniedFolders = denied
         isScanning = false
     }
 
@@ -150,11 +161,21 @@ final class BlockedAppStore: ObservableObject {
     /// so it filters ~200 apps down to the handful worth assessing.
     ///
     /// An unreadable root yields nothing rather than failing the scan: denying the
-    /// permission prompt should cost that one folder, not every result.
-    nonisolated private static func quarantinedCandidates(in root: URL) -> [URL] {
-        let contents = (try? FileManager.default.contentsOfDirectory(
-            at: root, includingPropertiesForKeys: nil, options: [.skipsHiddenFiles])) ?? []
-        return contents.filter { $0.pathExtension == "app" && Quarantine.isQuarantined(at: $0.path) }
+    /// permission prompt should cost that one folder, not every result. The denial
+    /// is reported back, because a folder that silently contributes nothing looks
+    /// exactly like a folder with nothing in it.
+    nonisolated private static func quarantinedCandidates(in root: URL) -> (apps: [URL], denied: Bool) {
+        do {
+            let contents = try FileManager.default.contentsOfDirectory(
+                at: root, includingPropertiesForKeys: nil, options: [.skipsHiddenFiles])
+            return (contents.filter { $0.pathExtension == "app" && Quarantine.isQuarantined(at: $0.path) }, false)
+        } catch CocoaError.fileReadNoPermission {
+            return ([], true)
+        } catch {
+            // A root that simply isn't there — ~/Applications often isn't — is
+            // not something to report.
+            return ([], false)
+        }
     }
 
     nonisolated private static func evaluate(_ candidate: Candidate) -> ScanResult? {

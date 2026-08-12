@@ -6,6 +6,7 @@ struct PopoverView: View {
     @ObservedObject var store: BlockedAppStore
     var onChooseApp: () -> Void
     var onOpenSettings: () -> Void
+    var onGrantAccess: () -> Void
     var onQuit: () -> Void
 
     var body: some View {
@@ -25,6 +26,11 @@ struct PopoverView: View {
                     }
                 }
                 .frame(maxHeight: 320)
+            }
+
+            if !store.deniedFolders.isEmpty {
+                Divider()
+                deniedNotice
             }
 
             if let error = store.lastError {
@@ -79,6 +85,33 @@ struct PopoverView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 26)
+    }
+
+    /// "Nothing is blocked" is only true for the folders that were actually read.
+    /// Without this, denying the permission prompt makes a partial scan look like
+    /// a clean bill of health.
+    private var deniedNotice: some View {
+        HStack(alignment: .top, spacing: 8) {
+            Image(systemName: "folder.badge.questionmark")
+                .foregroundStyle(.secondary)
+            VStack(alignment: .leading, spacing: 3) {
+                Text("\(ListFormatter.localizedString(byJoining: store.deniedFolders)) not checked")
+                    .font(.caption)
+                    .fontWeight(.medium)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text("A blocked app there won't be listed until Open Anyway can read the folder.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Button("Grant Access…", action: onGrantAccess)
+                    .buttonStyle(.link)
+                    .focusable(false)
+                    .font(.caption)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
     }
 
     private func row(for app: BlockedApp) -> some View {
