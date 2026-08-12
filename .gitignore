@@ -7,3 +7,4 @@ build/
 # Local agent tooling state (session prompts and file snapshots, not project config)
 .claude/taste-signals.jsonl
 .claude/taste-watch/
+.claude/taste/
