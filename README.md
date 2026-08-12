@@ -19,7 +19,41 @@ The padlock in the menu bar tells you at a glance whether anything is blocked. O
 - macOS 14 or later
 - Apple silicon — `build.sh` targets `arm64-apple-macos14.0`. For an Intel or universal build, change `-target` (or pass both arches) in [`build.sh`](build.sh).
 
-## Build
+## Install
+
+```bash
+brew install toshon-jennings/tap/open-anyway
+```
+
+Then launch it — it's a menu bar app, so nothing appears in the Dock:
+
+```bash
+open "$(brew --prefix open-anyway)/Open Anyway.app"
+```
+
+To keep it in `/Applications`:
+
+```bash
+ln -s "$(brew --prefix open-anyway)/Open Anyway.app" /Applications
+```
+
+### Upgrading
+
+```bash
+brew upgrade toshon-jennings/tap/open-anyway
+```
+
+If it reports nothing to do, the tap's copy of the formula is stale — `brew update` first.
+
+### Why it's a formula and not a cask
+
+Casks download a prebuilt app, and anything downloaded gets the `com.apple.quarantine` attribute. This app is ad-hoc signed, so Gatekeeper would block the download — you'd need Open Anyway to open Open Anyway.
+
+Installing as a formula compiles it on your machine instead. The result was never downloaded, so it carries no quarantine attribute and Gatekeeper never assesses it. (`spctl --assess` still rejects the bundle if you ask it directly. Nothing ever asks, which is exactly the mechanism this app is built on.)
+
+The trade is that you need the Xcode Command Line Tools, and the build takes about 15 seconds.
+
+## Build from source
 
 ```bash
 ./build.sh
