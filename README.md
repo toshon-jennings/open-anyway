@@ -106,7 +106,7 @@ Scanned locations, one level deep: `/Applications`, `/Applications/Utilities`, `
 
 ## A note on trust
 
-This performs the same action as the *Open Anyway* button already in System Settings, and it can't approve anything macOS wouldn't let you approve yourself. It makes that decision faster, which cuts both ways: Gatekeeper exists for a reason, and the reason you were stopped is that macOS could not verify who wrote the software. Unblock things you have a reason to trust — something you built, or something from a source you know. Convenience is the point; skipping the judgment isn't.
+This performs the same action as the *Open Anyway* button already in System Settings, and it can't approve anything macOS wouldn't let you approve yourself. It makes that decision faster, which cuts both ways: Gatekeeper exists for a reason, and the reason you were stopped is that macOS could not verify who wrote the software. Unblock things you have a reason to trust — something you built, or something from a source you know. **Convenience is the point; skipping the judgment isn't.**
 
 ## Known gaps
 
