@@ -22,7 +22,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         popover.behavior = .transient
-        popover.contentViewController = NSHostingController(
+        let hosting = NSHostingController(
             rootView: PopoverView(
                 store: store,
                 onChooseApp: { [weak self] in self?.chooseApp() },
@@ -30,6 +30,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 onQuit: { NSApp.terminate(nil) }
             )
         )
+        // Without this the popover picks its own size, which doesn't match the
+        // SwiftUI content — the content ends up offset inside the window and
+        // its leading edge clips away against the popover's rounded mask.
+        hosting.sizingOptions = .preferredContentSize
+        popover.contentViewController = hosting
 
         // The icon carries the alert, so a blocked app is noticeable without
         // opening anything.

@@ -3,7 +3,7 @@ set -euo pipefail
 
 APP_NAME="Open Anyway"
 BUNDLE_ID="com.toshonjennings.openanyway"
-VERSION="0.2.1"
+VERSION="0.2.2"
 
 cd "$(dirname "$0")"
 APP="build/${APP_NAME}.app"

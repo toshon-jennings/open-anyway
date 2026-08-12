@@ -110,7 +110,9 @@ struct PopoverView: View {
 
     private var footer: some View {
         HStack(spacing: 14) {
-            Button("Unblock an App…", action: onChooseApp).buttonStyle(.link)
+            Button("Unblock an App…", action: onChooseApp)
+                .buttonStyle(.link)
+                .focusable(false)
             Spacer()
             Menu {
                 Button("Open Privacy & Security…", action: onOpenSettings)
@@ -126,6 +128,7 @@ struct PopoverView: View {
             .menuStyle(.borderlessButton)
             .menuIndicator(.hidden)
             .fixedSize()
+            .focusable(false)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
