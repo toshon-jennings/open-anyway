@@ -1,38 +1,50 @@
 # App icon
 
-`AppIcon.svg` is the source of truth. `AppIcon.icns` is generated from it and is
-what [`build.sh`](../build.sh) copies into the bundle (`CFBundleIconFile = AppIcon`).
+`AppIcon.png` is the source of truth — a 1024×1024 RGBA master. `AppIcon.icns` is
+generated from it and is what [`build.sh`](../build.sh) copies into the bundle
+(`CFBundleIconFile = AppIcon`).
+
+The artwork was generated from the prompt below and then cleaned up: image models
+return an opaque rectangle, which is not an app icon. Two things had to change.
+
+**The background had to be knocked out.** The render sat on a light grey field
+with a drop shadow under the tile. Left alone that ships as a grey square in
+every dark-mode context. The tile was isolated by saturation — it is strongly
+purple while the background and its shadow are near-grey, so a saturation
+threshold finds the tile's exact bounds and excludes the shadow — then a
+supersampled rounded-rectangle mask cut the corners to transparent.
+
+**It is deliberately full-bleed.** Apple's own convention insets the tile to
+about 824px inside a 1024px canvas, leaving transparent padding. This icon
+instead fills the canvas edge to edge, by preference. If you ever restore the
+padding, it is a one-line change — paste an 824px tile at offset (100, 100) onto
+a transparent 1024 canvas — but don't "fix" it back thinking it was an oversight.
+
+The measured corner radius of the generated tile was 22.96% of its width, which
+is near enough to Apple's squircle that the mask matches without visible slivers.
+If you regenerate the art, re-measure rather than assuming that number.
 
 ## Regenerating `AppIcon.icns`
 
-Render the SVG to the sizes macOS wants, then pack them:
+Render `AppIcon.png` down to the sizes macOS wants, using Apple's exact
+filenames — `icon_16x16.png`, `icon_16x16@2x.png` (32px), `icon_32x32.png`,
+`icon_32x32@2x.png` (64px), and so on up to `icon_512x512@2x.png` (1024px) — then
+pack them:
 
 ```bash
-python3 -c "
-import cairosvg
-for px in (16,32,64,128,256,512,1024):
-    cairosvg.svg2png(url='Resources/AppIcon.svg', write_to='/tmp/icon.iconset/%d.png'%px, output_width=px, output_height=px)
-"
-```
-
-The `.iconset` folder needs Apple's exact filenames — `icon_16x16.png`,
-`icon_16x16@2x.png` (32px), `icon_32x32.png`, `icon_32x32@2x.png` (64px), and so
-on up to `icon_512x512@2x.png` (1024px). Then:
-
-```bash
-iconutil -c icns /tmp/icon.iconset -o Resources/AppIcon.icns
+iconutil -c icns /tmp/AppIcon.iconset -o Resources/AppIcon.icns
 ```
 
 macOS caches icons aggressively. After swapping the file, `touch` the built
 bundle — otherwise Finder and System Settings keep showing the old one and it
 looks like the change didn't take.
 
-## Replacing it with generated artwork
+To confirm macOS actually resolves the new icon rather than trusting that the
+file is in place, ask it: `NSWorkspace.shared.icon(forFile:)` on the built
+bundle, drawn to a PNG. If it returns a generic document page, the `.icns` or the
+`CFBundleIconFile` key isn't being picked up.
 
-If you'd rather have a rendered icon than the flat vector, the prompt below is
-tuned for it. Two things matter more than style: the shackle gap has to survive
-at 16px, and the artwork needs generous padding or macOS's own rounding will
-crop into it.
+## The generation prompt
 
 > A macOS application icon for a utility called "Open Anyway". Centered on a
 > rounded-square (squircle) tile in the macOS Big Sur / Tahoe style, filling
@@ -51,12 +63,6 @@ Steer it with the terms that carry the meaning: **"open padlock, shackle swung
 open with a visible gap"** is the whole idea. Models default to a closed lock,
 which says the opposite of what this app does.
 
-Then convert the result:
-
-```bash
-sips -z 1024 1024 icon.png --out /tmp/icon.iconset/icon_512x512@2x.png
-```
-
-Generate the remaining sizes from the same PNG the same way, then run `iconutil`
-as above. Check it at 16px before committing — detail that reads beautifully at
-512 usually turns to mud, which is why the vector here stays this plain.
+Whatever comes back, check it at 16px before committing. That gap is the only
+thing separating this from every other lock glyph, and at 16px a closed lock and
+an open one are about two pixels apart.
