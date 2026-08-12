@@ -3,7 +3,7 @@ set -euo pipefail
 
 APP_NAME="Open Anyway"
 BUNDLE_ID="com.toshonjennings.openanyway"
-VERSION="0.1.0"
+VERSION="0.2.0"
 
 cd "$(dirname "$0")"
 APP="build/${APP_NAME}.app"
@@ -23,6 +23,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
     <key>CFBundlePackageType</key><string>APPL</string>
     <key>CFBundleShortVersionString</key><string>${VERSION}</string>
     <key>CFBundleVersion</key><string>${VERSION}</string>
+    <key>CFBundleIconFile</key><string>AppIcon</string>
     <key>LSMinimumSystemVersion</key><string>14.0</string>
     <key>NSHumanReadableCopyright</key><string>Toshon Jennings</string>
     <!-- Menu bar only: no Dock icon, no app switcher entry. -->
@@ -30,6 +31,8 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 </dict>
 </plist>
 PLIST
+
+cp Resources/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
 
 swiftc \
     -target arm64-apple-macos14.0 \
