@@ -6,6 +6,12 @@ If you build or run a lot of unsigned Mac apps, you know the loop: double-click,
 
 The padlock in the menu bar tells you at a glance whether anything is blocked. Open it and every blocked app is listed with a single **Open Anyway** button — the same decision the OS offers you, in one click instead of six.
 
+```bash
+brew install toshon-jennings/tap/open-anyway
+```
+
+Requires macOS 14+ on Apple silicon. Full [install and upgrade instructions](#install) below.
+
 ## What it does
 
 - **Finds blocked apps on its own.** No need to remember which app you were trying to launch.
