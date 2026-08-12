@@ -74,3 +74,7 @@ This performs the same action as the *Open Anyway* button already in System Sett
 - The build targets Apple silicon only.
 - Ad-hoc signed, so macOS re-prompts for folder access after each rebuild.
 - The origin URL of a download is deliberately not shown. It used to live in the quarantine record, but modern macOS no longer populates that field — it was empty for every row on the machine this was built against — so the app shows the downloading app and date instead.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
