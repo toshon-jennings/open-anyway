@@ -55,6 +55,12 @@ struct PopoverView: View {
             }
             .buttonStyle(.borderless)
             .help("Scan again")
+            // Otherwise this is the first focusable control in the popover, so
+            // it takes focus the moment the popover opens and wears an accent-
+            // coloured ring the whole time — which reads as a stuck highlight
+            // rather than as focus. Nothing here is driven by keyboard, so
+            // dropping it from the focus chain costs nothing.
+            .focusable(false)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
