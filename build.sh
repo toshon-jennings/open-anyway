@@ -35,7 +35,7 @@ PLIST
 cp Resources/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
 
 swiftc \
-    -target arm64-apple-macos14.0 \
+    -target $(uname -m)-apple-macos14.0 \
     -O -whole-module-optimization \
     -framework AppKit -framework SwiftUI -framework ServiceManagement \
     Sources/*.swift \
